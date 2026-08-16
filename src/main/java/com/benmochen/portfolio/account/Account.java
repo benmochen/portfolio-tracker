@@ -8,8 +8,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import org.hibernate.annotations.Generated;
-import org.hibernate.generator.EventType;
 
 import java.time.Instant;
 
@@ -39,12 +37,15 @@ public class Account {
     @Column(name = "account_type", nullable = false, length = 32)
     private AccountType accountType;
 
+    /** Who this account belongs to. Required as of V7. */
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
+
     /** ISO 4217 code, e.g. "CAD". Stored as CHAR(3). */
     @Column(nullable = false, length = 3)
     private String currency;
 
     /** Filled by the database DEFAULT now(), never by Java. */
-    @Generated(event = EventType.INSERT)
     @Column(name = "created_at", nullable = false, insertable = false, updatable = false)
     private Instant createdAt;
 
@@ -52,7 +53,9 @@ public class Account {
     protected Account() {
     }
 
-    public Account(String externalId, String name, AccountType accountType, String currency) {
+    public Account(String externalId, String name, AccountType accountType, String currency,
+                   Long userId) {
+        this.userId = userId;
         this.externalId = externalId;
         this.name = name;
         this.accountType = accountType;
@@ -61,6 +64,14 @@ public class Account {
 
     public Long getId() {
         return id;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 
     public String getExternalId() {

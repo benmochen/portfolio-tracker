@@ -1,17 +1,32 @@
 package com.benmochen.portfolio.account;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
-/**
- * Spring Data generates the implementation at runtime. Method names are parsed
- * into queries: findByExternalId becomes
- * "select ... from account where external_id = ?".
- */
 public interface AccountRepository extends JpaRepository<Account, Long> {
 
-    Optional<Account> findByExternalId(String externalId);
+    /**
+     * Every lookup is scoped by user. There is deliberately no plain
+     * findById in use: an unscoped read is how one user ends up seeing
+     * another's holdings by changing a number in the URL.
+     */
+    Optional<Account> findByIdAndUserId(Long id, Long userId);
 
-    boolean existsByExternalId(String externalId);
+    List<Account> findByUserIdOrderByIdAsc(Long userId);
+
+    Optional<Account> findByExternalIdAndUserId(String externalId, Long userId);
+
+    boolean existsByExternalIdAndUserId(String externalId, Long userId);
+
+    boolean existsByIdAndUserId(Long id, Long userId);
+
+    /** One-time claim of accounts that were imported before users existed. */
+    @Modifying
+    @Query("update Account a set a.userId = :userId where a.userId is null")
+    int claimUnownedAccounts(@Param("userId") Long userId);
 }
