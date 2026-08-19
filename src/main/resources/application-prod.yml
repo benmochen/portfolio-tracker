@@ -1,0 +1,29 @@
+# Deployed settings.
+#
+# Every value here comes from the environment with no fallback: a missing
+# database password should stop the app, not quietly connect to something else.
+
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      # Sized explicitly rather than defaulted. Free Postgres tiers often cap
+      # total connections around 20, and the default pool of 10 per instance
+      # exhausts that quickly.
+      maximum-pool-size: 5
+
+  flyway:
+    # Migrations still run on startup here, which is a known compromise: with
+    # more than one instance, two starting together can race on the schema
+    # history table. A real deployment runs them as a separate step first.
+    enabled: true
+
+scheduling:
+  enabled: true
+
+logging:
+  level:
+    root: info
+    org.hibernate.SQL: warn

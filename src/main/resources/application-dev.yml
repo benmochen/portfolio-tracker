@@ -1,0 +1,12 @@
+# Local development. Activate with:  SPRING_PROFILES_ACTIVE=dev ./gradlew bootRun
+# Or set spring.profiles.active=dev in application.yml while you are building.
+
+spring:
+  jpa:
+    properties:
+      hibernate:
+        format_sql: true
+
+logging:
+  level:
+    org.hibernate.SQL: debug

@@ -1,0 +1,36 @@
+# Shared settings. Anything environment-specific belongs in a profile file
+# below, not here.
+
+spring:
+  application:
+    name: portfolio-tracker
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5433/portfolio}
+    username: ${DB_USERNAME:portfolio}
+    password: ${DB_PASSWORD:portfolio_local_dev}
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+alphavantage:
+  api-key: ${ALPHAVANTAGE_API_KEY:}
+  base-url: https://www.alphavantage.co/query
+  requests-per-minute: 5
+  output-size: compact
+
+# Off by default so starting the app locally does not silently spend the day's
+# API quota. Switched on in prod.
+scheduling:
+  enabled: ${SCHEDULING_ENABLED:false}
