@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* Accounting vernacular, not dashboard vernacular: tabular figures,
+     parenthesised negatives in oxblood rather than red-versus-green, and a
+     double rule under totals. Every number here is derived from a ledger, and
+     the typography is borrowed from the thing that produces ledgers. */
+  :root {
+    --paper:   #F4F6F4;
+    --card:    #FCFDFC;
+    --ink:     #16181C;
+    --muted:   #6B7168;
+    --rule:    #D6DBD5;
+    --oxblood: #8C2F2F;
+    --indigo:  #23407A;
+
+    --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --sans: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 940px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  /* ---- masthead ---- */
+  header { border-bottom: 2px solid var(--ink); padding-bottom: 14px; margin-bottom: 28px; }
+
+  h1 {
+    font-family: var(--mono);
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin: 0 0 4px;
+  }
+
+  .subtitle { color: var(--muted); font-size: 13px; margin: 0; }
+
+  /* ---- account tabs ---- */
+  nav { display: flex; gap: 6px; flex-wrap: wrap; margin: 18px 0 28px; }
+
+  nav button {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    padding: 6px 12px;
+    background: transparent;
+    border: 1px solid var(--rule);
+    color: var(--muted);
+    cursor: pointer;
+    border-radius: 2px;
+  }
+  nav button:hover { border-color: var(--ink); color: var(--ink); }
+  nav button[aria-current="true"] {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--paper);
+  }
+
+  /* ---- statement block: the signature element ---- */
+  .statement {
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    padding: 22px 24px;
+    margin-bottom: 26px;
+  }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 14px;
+  }
+
+  .line {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 5px 0;
+  }
+  .line .label { white-space: nowrap; }
+  /* Leader dots: the ledger convention for tying a label to its figure. */
+  .line .leader {
+    flex: 1;
+    border-bottom: 1px dotted var(--rule);
+    transform: translateY(-4px);
+  }
+  .line .figure {
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 14px;
+    white-space: nowrap;
+  }
+
+  .line.total { margin-top: 8px; padding-top: 12px; border-top: 1px solid var(--ink); }
+  .line.total .label { font-weight: 600; }
+  .line.total .figure {
+    font-size: 20px;
+    font-weight: 600;
+    /* Double rule under a total: the accounting convention for "this is the
+       figure, nothing follows it". */
+    border-bottom: 3px double var(--ink);
+    padding-bottom: 2px;
+  }
+
+  .neg { color: var(--oxblood); }
+
+  /* ---- returns ---- */
+  .returns { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 26px; }
+  @media (max-width: 640px) { .returns { grid-template-columns: 1fr; } }
+
+  .ret {
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    padding: 18px 20px;
+  }
+  .ret .pct {
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 30px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    display: block;
+    margin: 2px 0 6px;
+  }
+  .ret .gloss { font-size: 13px; color: var(--muted); margin: 0; }
+  .ret .window {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 8px;
+  }
+
+  /* ---- holdings ---- */
+  table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
+
+  th {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 500;
+    text-align: right;
+    padding: 0 0 8px;
+    border-bottom: 1px solid var(--ink);
+  }
+  th:first-child, td:first-child { text-align: left; }
+
+  td {
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 13px;
+    text-align: right;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  td + td, th + th { padding-left: 18px; }
+
+  .sym { font-weight: 600; }
+  .ccy { color: var(--muted); font-weight: 400; margin-left: 6px; font-size: 11px; }
+
+  details { margin-top: 26px; }
+  summary {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 8px 0;
+  }
+  summary:hover { color: var(--ink); }
+
+  /* ---- actions ---- */
+  .actions {
+    margin-top: 40px;
+    padding-top: 22px;
+    border-top: 1px solid var(--rule);
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .btn {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    padding: 8px 14px;
+    border: 1px solid var(--ink);
+    background: transparent;
+    color: var(--ink);
+    cursor: pointer;
+    border-radius: 2px;
+  }
+  .btn:hover { background: var(--ink); color: var(--paper); }
+  .btn:disabled { opacity: 0.4; cursor: wait; }
+  .btn:focus-visible, nav button:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--indigo);
+    outline-offset: 2px;
+  }
+
+  input[type=file] { font-family: var(--mono); font-size: 12px; max-width: 100%; }
+
+  /* ---- notices ---- */
+  .notice {
+    border-left: 3px solid var(--oxblood);
+    background: var(--card);
+    padding: 10px 14px;
+    margin-bottom: 10px;
+    font-size: 13px;
+  }
+  .notice.ok { border-left-color: var(--indigo); }
+
+  .empty { color: var(--muted); font-size: 14px; padding: 20px 0; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .statement, .ret, table { animation: rise 0.28s ease-out both; }
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(4px); }
+      to   { opacity: 1; transform: none; }
+    }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>Portfolio</h1>
+    <p class="subtitle">Positions and returns derived from your transaction ledger.</p>
+  </header>
+
+  <nav id="accounts" aria-label="Accounts"></nav>
+
+  <div id="notices"></div>
+  <div id="body"></div>
+
+  <div class="actions">
+    <input type="file" id="file" accept=".xlsx">
+    <button class="btn" id="import">Import activity</button>
+    <button class="btn" id="prices">Update prices</button>
+    <button class="btn" id="fx">Update exchange rates</button>
+  </div>
+
+</div>
+
+<script>
+// Credentials are handled by the browser: every page and API path requires
+// HTTP Basic auth, so the browser prompts once and attaches them from then on.
+// Nothing is stored by this script.
+
+const money = new Intl.NumberFormat('en-CA', {
+  minimumFractionDigits: 2, maximumFractionDigits: 2
+});
+const units = new Intl.NumberFormat('en-CA', {
+  minimumFractionDigits: 0, maximumFractionDigits: 4
+});
+
+// Accounting style: negatives are parenthesised, not signed, and set in
+// oxblood. Reading a column of figures, a bracket is far easier to catch than
+// a minus sign.
+function fig(value, formatter = money) {
+  if (value === null || value === undefined) return '<span class="figure">—</span>';
+  const n = Number(value);
+  const text = formatter.format(Math.abs(n));
+  return n < 0
+    ? `<span class="figure neg">(${text})</span>`
+    : `<span class="figure">${text}</span>`;
+}
+
+function pct(value) {
+  if (value === null || value === undefined) return '—';
+  const n = Number(value);
+  return (n < 0 ? '(' : '') + Math.abs(n).toFixed(2) + '%' + (n < 0 ? ')' : '');
+}
+
+function cell(value, formatter = money) {
+  if (value === null || value === undefined) return '<td>—</td>';
+  const n = Number(value);
+  const text = formatter.format(Math.abs(n));
+  return n < 0 ? `<td class="neg">(${text})</td>` : `<td>${text}</td>`;
+}
+
+async function api(path, options) {
+  const response = await fetch(path, options);
+  if (!response.ok) {
+    let detail = response.statusText;
+    try {
+      const body = await response.json();
+      detail = body.detail || body.message || detail;
+    } catch (ignored) { /* body was not JSON */ }
+    throw new Error(detail);
+  }
+  return response.status === 204 ? null : response.json();
+}
+
+function notify(message, ok = false) {
+  document.getElementById('notices').innerHTML =
+    `<div class="notice ${ok ? 'ok' : ''}">${message}</div>`;
+}
+
+let accounts = [];
+let currentId = null;
+
+async function loadAccounts() {
+  accounts = await api('/api/accounts');
+  const nav = document.getElementById('accounts');
+
+  if (accounts.length === 0) {
+    nav.innerHTML = '';
+    document.getElementById('body').innerHTML =
+      '<p class="empty">No accounts yet. Import a Questrade activity export to begin.</p>';
+    return;
+  }
+
+  currentId = currentId ?? accounts[0].id;
+  nav.innerHTML = accounts.map(a =>
+    `<button data-id="${a.id}" aria-current="${a.id === currentId}">
+       ${a.name} · ${a.accountType}
+     </button>`).join('');
+
+  nav.querySelectorAll('button').forEach(button =>
+    button.addEventListener('click', () => {
+      currentId = Number(button.dataset.id);
+      loadAccounts();
+      loadAccount();
+    }));
+}
+
+async function loadAccount() {
+  if (currentId === null) return;
+  const [summary, positions] = await Promise.all([
+    api(`/api/accounts/${currentId}/summary`),
+    api(`/api/accounts/${currentId}/positions`)
+  ]);
+  render(summary, positions);
+}
+
+function render(s, p) {
+  const twr = s.timeWeightedReturn;
+
+  const cash = s.cashBalances
+    .map(b => `${b.currency} ${money.format(b.amount)}`)
+    .join(' · ') || 'none';
+
+  document.getElementById('body').innerHTML = `
+    <section class="statement">
+      <p class="eyebrow">Statement · ${s.reportingCurrency}</p>
+
+      <div class="line">
+        <span class="label">Securities at last close</span>
+        <span class="leader"></span>${fig(s.marketValue)}
+      </div>
+      <div class="line">
+        <span class="label">Uninvested cash</span>
+        <span class="leader"></span>
+        <span class="figure">${cash}</span>
+      </div>
+      <div class="line total">
+        <span class="label">Total value</span>
+        <span class="leader"></span>${fig(s.totalValue)}
+      </div>
+
+      <div style="height:22px"></div>
+
+      <div class="line">
+        <span class="label">Cost of what you hold</span>
+        <span class="leader"></span>${fig(s.costBasis)}
+      </div>
+      <div class="line">
+        <span class="label">Gain not yet taken</span>
+        <span class="leader"></span>${fig(s.unrealisedGain)}
+      </div>
+      <div class="line">
+        <span class="label">Gain already taken</span>
+        <span class="leader"></span>${fig(s.realisedGain)}
+      </div>
+      <div class="line">
+        <span class="label">Dividends received</span>
+        <span class="leader"></span>${fig(s.dividendsReceived)}
+      </div>
+      <div class="line">
+        <span class="label">Deposited, net of withdrawals</span>
+        <span class="leader"></span>${fig(s.netDeposits)}
+      </div>
+    </section>
+
+    <div class="returns">
+      <div class="ret">
+        <p class="eyebrow">Your money</p>
+        <span class="pct">${pct(s.moneyWeightedReturnPct)}</span>
+        <p class="gloss">Annualised, weighted by when each dollar arrived.
+           Depositing before a rise improves this figure.</p>
+      </div>
+      <div class="ret">
+        <p class="eyebrow">The investments</p>
+        <span class="pct">${twr ? pct(twr.cumulativePct) : '—'}</span>
+        <p class="gloss">Cumulative, with contribution timing removed.
+           This is the figure to compare against an index.</p>
+        ${twr
+          ? `<p class="window">${twr.from} to ${twr.to} · ${twr.subPeriods} period(s)</p>`
+          : '<p class="window">Not enough price history to measure a window.</p>'}
+      </div>
+    </div>
+
+    ${holdings(p.open)}
+
+    <details>
+      <summary>Closed positions (${p.closed.length})</summary>
+      ${closed(p.closed)}
+    </details>
+  `;
+
+  if (s.warnings && s.warnings.length) {
+    document.getElementById('notices').innerHTML =
+      s.warnings.map(w => `<div class="notice">${w}</div>`).join('');
+  } else {
+    document.getElementById('notices').innerHTML = '';
+  }
+}
+
+function holdings(rows) {
+  if (!rows.length) return '<p class="empty">Nothing currently held.</p>';
+  return `
+    <table>
+      <thead><tr>
+        <th>Holding</th><th>Units</th><th>Cost each</th>
+        <th>Last close</th><th>Value</th><th>Gain</th>
+      </tr></thead>
+      <tbody>
+        ${rows.map(r => `
+          <tr>
+            <td><span class="sym">${r.symbol}</span><span class="ccy">${r.currency}</span></td>
+            ${cell(r.quantity, units)}
+            ${cell(r.costPerUnit)}
+            ${cell(r.lastClose)}
+            ${cell(r.marketValue)}
+            ${cell(r.unrealisedGain)}
+          </tr>`).join('')}
+      </tbody>
+    </table>`;
+}
+
+function closed(rows) {
+  if (!rows.length) return '<p class="empty">Nothing sold yet.</p>';
+  return `
+    <table>
+      <thead><tr>
+        <th>Holding</th><th>Gain taken</th><th>Dividends</th><th>Commissions</th>
+      </tr></thead>
+      <tbody>
+        ${rows.map(r => `
+          <tr>
+            <td><span class="sym">${r.symbol}</span><span class="ccy">${r.currency}</span></td>
+            ${cell(r.realisedGain)}
+            ${cell(r.dividendsReceived)}
+            ${cell(r.commissionsPaid)}
+          </tr>`).join('')}
+      </tbody>
+    </table>`;
+}
+
+async function withButton(button, label, work) {
+  const original = button.textContent;
+  button.disabled = true;
+  button.textContent = label;
+  try {
+    await work();
+  } catch (e) {
+    notify(e.message);
+  } finally {
+    button.disabled = false;
+    button.textContent = original;
+  }
+}
+
+document.getElementById('import').addEventListener('click', function () {
+  const input = document.getElementById('file');
+  if (!input.files.length) {
+    notify('Choose a Questrade .xlsx export first.');
+    return;
+  }
+  withButton(this, 'Importing…', async () => {
+    const form = new FormData();
+    form.append('file', input.files[0]);
+    const result = await api('/api/imports', { method: 'POST', body: form });
+    notify(result.alreadyImported
+      ? 'That file was already imported. Nothing changed.'
+      : `Imported ${result.inserted} of ${result.rowsInFile} rows.`, true);
+    await loadAccounts();
+    await loadAccount();
+  });
+});
+
+document.getElementById('prices').addEventListener('click', function () {
+  withButton(this, 'Updating…', async () => {
+    const result = await api('/api/prices/refresh?limit=5', { method: 'POST' });
+    notify(`Updated ${result.instrumentsProcessed} holdings, `
+      + `${result.stillDue} still to go.`, true);
+    await loadAccount();
+  });
+});
+
+document.getElementById('fx').addEventListener('click', function () {
+  withButton(this, 'Updating…', async () => {
+    const result = await api('/api/fx/refresh', { method: 'POST' });
+    notify(`Exchange rates current to ${result.through}.`, true);
+    await loadAccount();
+  });
+});
+
+(async function start() {
+  try {
+    await loadAccounts();
+    await loadAccount();
+  } catch (e) {
+    notify(e.message);
+  }
+})();
+</script>
+</body>
+</html>
